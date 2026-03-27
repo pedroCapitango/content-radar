@@ -1,6 +1,7 @@
 [build]
+  base = "content-radar"
   command = "npm run build"
-  publish = "dist"
+  publish = "content-radar/dist"
 
 [[redirects]]
   from = "/*"
