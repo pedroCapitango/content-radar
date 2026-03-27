@@ -1,9 +1,6 @@
 [build]
-  command = "npm --prefix .. run build"
-  publish = "../dist"
-
-[build.environment]
-  NODE_VERSION = "20"
+  command = "npm run build"
+  publish = "dist"
 
 [[redirects]]
   from = "/*"
