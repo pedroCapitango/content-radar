@@ -7,6 +7,7 @@ const HISTORY_KEY = 'cr_history'
 const SYNC_KEY = 'cr_last_sync'
 const RECOMMENDED_KEY = 'cr_recommended_tabnews'
 const RECOMMENDED_SYNC_KEY = 'cr_recommended_sync'
+const YOUTUBE_KEY_SESSION_KEY = 'cr_youtube_key'
 
 function storageGet(key) {
   try { return JSON.parse(localStorage.getItem(key)) } catch { return null }
@@ -23,19 +24,36 @@ export function useStore() {
   const [loading, setLoading] = useState(false)
   const [loadingLog, setLoadingLog] = useState([])
   const [recommendedItems, setRecommendedItems] = useState(() => storageGet(RECOMMENDED_KEY) || [])
-  const [config, setConfig] = useState(() => storageGet('cr_config') || {
-    subreddits: 'ProgrammerHumor, webdev, MachineLearning, backend, golang',
-    redditSort: 'hot',
-    redditLimit: 15,
-    hnLimit: 20,
-    tabnewsLimit: 20,
-    youtubeKey: '',
-    excludeKeywords: [],
+
+  const [config, setConfig] = useState(() => {
+    const defaults = {
+      subreddits: 'ProgrammerHumor, webdev, MachineLearning, backend, golang',
+      redditSort: 'hot',
+      redditLimit: 15,
+      hnLimit: 20,
+      tabnewsLimit: 20,
+      youtubeKey: '',
+      excludeKeywords: [],
+    }
+
+    const persisted = storageGet('cr_config') || {}
+    let sessionYoutubeKey = ''
+    try { sessionYoutubeKey = sessionStorage.getItem(YOUTUBE_KEY_SESSION_KEY) || '' } catch {}
+
+    // If there's no session key yet, fall back to whatever was previously stored in localStorage.
+    const youtubeKey = sessionYoutubeKey || persisted.youtubeKey || defaults.youtubeKey
+
+    const { youtubeKey: _ignored, ...persistedWithoutYoutubeKey } = persisted
+    return { ...defaults, ...persistedWithoutYoutubeKey, youtubeKey }
   })
 
   const saveConfig = useCallback((newConfig) => {
     setConfig(newConfig)
-    storageSet('cr_config', newConfig)
+    // Keep YouTube API key out of localStorage (reduces persistence of sensitive values).
+    try { sessionStorage.setItem(YOUTUBE_KEY_SESSION_KEY, newConfig.youtubeKey || '') } catch {}
+
+    const { youtubeKey: _ignored, ...persistedWithoutYoutubeKey } = newConfig
+    storageSet('cr_config', persistedWithoutYoutubeKey)
   }, [])
 
   const refreshRecommendations = useCallback(async (force = false) => {
@@ -53,6 +71,18 @@ export function useStore() {
   useEffect(() => {
     refreshRecommendations(false)
   }, [refreshRecommendations])
+
+  // One-time migration: if youtubeKey is already stored in localStorage from earlier versions,
+  // remove it after loading.
+  useEffect(() => {
+    try {
+      const persisted = storageGet('cr_config') || {}
+      if (persisted && persisted.youtubeKey) {
+        const { youtubeKey: _ignored, ...rest } = persisted
+        storageSet('cr_config', rest)
+      }
+    } catch {}
+  }, [])
 
   const runFetch = useCallback(async (topicQuery = '') => {
     setLoading(true)
