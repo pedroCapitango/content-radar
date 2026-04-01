@@ -16,7 +16,7 @@ const calendarDays = [
   { day: 'S', type: '📦 Ferramenta da semana',hint: 'Baseado nos docs recolhidos',         color: 'var(--ink3)' },
 ]
 
-export default function LinkedInHelper({ items, initialItem }) {
+export default function LinkedInHelper({ items, initialItem, isCompact = false }) {
   const [title, setTitle] = useState('')
   const [type, setType] = useState('opinion')
   const [draft, setDraft] = useState('')
@@ -82,20 +82,23 @@ export default function LinkedInHelper({ items, initialItem }) {
       {/* Hero */}
       <div style={{
         background: 'var(--ink)', borderRadius: 'var(--card-r)',
-        padding: '28px 32px', marginBottom: 24, position: 'relative', overflow: 'hidden',
+        padding: isCompact ? '20px 16px' : '28px 32px', marginBottom: 24, position: 'relative', overflow: 'hidden',
       }}>
-        <div style={{ position: 'absolute', right: 24, top: '50%', transform: 'translateY(-50%)', fontFamily: 'var(--serif)', fontSize: 120, fontWeight: 900, color: 'rgba(255,255,255,0.03)', lineHeight: 1, userSelect: 'none' }}>
+        <div style={{
+          position: 'absolute', right: isCompact ? 12 : 24, top: '50%', transform: 'translateY(-50%)',
+          fontFamily: 'var(--serif)', fontSize: isCompact ? 72 : 120, fontWeight: 900, color: 'var(--ghost)', lineHeight: 1, userSelect: 'none',
+        }}>
           in
         </div>
-        <h2 style={{ fontFamily: 'var(--serif)', fontSize: 24, fontWeight: 900, color: 'var(--gold2)', marginBottom: 8, letterSpacing: '-0.03em' }}>
+        <h2 style={{ fontFamily: 'var(--serif)', fontSize: isCompact ? 20 : 24, fontWeight: 900, color: 'var(--gold2)', marginBottom: 8, letterSpacing: '-0.03em' }}>
           LinkedIn Content Helper
         </h2>
-        <p style={{ fontSize: 12, color: 'rgba(255,255,255,0.5)', maxWidth: 500, lineHeight: 1.7 }}>
+        <p style={{ fontSize: 12, color: 'var(--ghost-text)', maxWidth: 500, lineHeight: 1.7 }}>
           Transforma os memes e artigos que encontraste em posts de alta performance. Foco em programação, Backend, IA e o mercado tech angolano.
         </p>
       </div>
 
-      <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 20, marginBottom: 20 }}>
+      <div style={{ display: 'grid', gridTemplateColumns: isCompact ? '1fr' : '1fr 1fr', gap: 20, marginBottom: 20 }}>
 
         {/* Ideias */}
         {card('💡 Ideias de Posts da Semana',
@@ -138,11 +141,11 @@ export default function LinkedInHelper({ items, initialItem }) {
       </div>
 
       {/* Gerador */}
-      <div style={{ background: 'var(--cream)', border: '1px solid var(--border)', borderRadius: 'var(--card-r)', padding: 20 }}>
+      <div style={{ background: 'var(--cream)', border: '1px solid var(--border)', borderRadius: 'var(--card-r)', padding: isCompact ? 14 : 20 }}>
         <h3 style={{ fontFamily: 'var(--serif)', fontSize: 15, fontWeight: 700, marginBottom: 16, color: 'var(--text)' }}>
           ✍ Gerador de Rascunho
         </h3>
-        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 16 }}>
+        <div style={{ display: 'grid', gridTemplateColumns: isCompact ? '1fr' : '1fr 1fr', gap: 16 }}>
           <div>
             {field('Título / Tema',
               <input value={title} onChange={e => setTitle(e.target.value)} placeholder="Ex: Vibe coding está a matar as soft skills?" style={inputStyle} />
