@@ -1,4 +1,4 @@
-export default function Setup({ config, saveConfig }) {
+export default function Setup({ config, saveConfig, isCompact = false }) {
     function handleSubmit(e) {
       e.preventDefault()
       const fd = new FormData(e.target)
@@ -39,7 +39,7 @@ export default function Setup({ config, saveConfig }) {
   
     return (
       <form onSubmit={handleSubmit}>
-        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 20, marginBottom: 20 }}>
+        <div style={{ display: 'grid', gridTemplateColumns: isCompact ? '1fr' : '1fr 1fr', gap: 20, marginBottom: 20 }}>
   
           {card('📡 Reddit', <>
             {field('Subreddits (separados por vírgula)',
@@ -110,6 +110,7 @@ export default function Setup({ config, saveConfig }) {
           padding: '12px 32px', background: 'var(--ink)', color: 'var(--gold2)',
           border: 'none', borderRadius: 8, fontFamily: 'var(--mono)',
           fontSize: 13, cursor: 'pointer', letterSpacing: '0.08em',
+          width: isCompact ? '100%' : 'auto',
         }}>
           💾 Guardar Configuração
         </button>
