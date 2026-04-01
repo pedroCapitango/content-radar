@@ -9,7 +9,7 @@ const fmt = n => n >= 1000 ? (n / 1000).toFixed(1) + 'k' : String(n)
 const typeEmoji = { meme: '🤣', article: '📄', doc: '📚', discussion: '💬' }
 const typeLabel = { meme: 'Meme', article: 'Artigo', doc: 'Doc', discussion: 'Discussão' }
 
-export default function Dashboard({ items, savedIds, history }) {
+export default function Dashboard({ items, savedIds, history, isCompact = false }) {
   const trendRef = useRef(null)
   const sourceRef = useRef(null)
   const typeRef = useRef(null)
@@ -115,7 +115,7 @@ export default function Dashboard({ items, savedIds, history }) {
   return (
     <div>
       {/* KPIs */}
-      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(5,1fr)', gap: 14, marginBottom: 28 }}>
+      <div style={{ display: 'grid', gridTemplateColumns: isCompact ? 'repeat(2, minmax(0, 1fr))' : 'repeat(5,1fr)', gap: 14, marginBottom: 28 }}>
         <KpiCard label="Total recolhido" value={items.length} delta="itens na base de dados" color="var(--text)" />
         <KpiCard label="🤣 Memes" value={memes} color="var(--coral)" />
         <KpiCard label="📄 Artigos + Docs" value={articles} color="var(--teal)" />
@@ -124,7 +124,7 @@ export default function Dashboard({ items, savedIds, history }) {
       </div>
 
       {/* Trend + Top viral */}
-      <div style={{ display: 'grid', gridTemplateColumns: '2fr 1fr', gap: 20, marginBottom: 20 }}>
+      <div style={{ display: 'grid', gridTemplateColumns: isCompact ? '1fr' : '2fr 1fr', gap: 20, marginBottom: 20 }}>
         <div style={card()}>
           <h3 style={{ fontFamily: 'var(--serif)', fontSize: 15, fontWeight: 700, marginBottom: 16, color: 'var(--text)' }}>
             Volume por tipo (últimos 7 dias)
@@ -177,7 +177,7 @@ export default function Dashboard({ items, savedIds, history }) {
       </div>
 
       {/* Donuts */}
-      <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 20 }}>
+      <div style={{ display: 'grid', gridTemplateColumns: isCompact ? '1fr' : '1fr 1fr', gap: 20 }}>
         <div style={card()}>
           <h3 style={{ fontFamily: 'var(--serif)', fontSize: 15, fontWeight: 700, marginBottom: 16, color: 'var(--text)' }}>
             Distribuição por fonte
