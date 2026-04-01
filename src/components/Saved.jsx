@@ -48,7 +48,7 @@ export default function Saved({ items, savedIds, toggleSave, onToLinkedIn }) {
   return (
     <div>
       {/* Header */}
-      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 24 }}>
+      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 24, gap: 12, flexWrap: 'wrap' }}>
         <div>
           <h2 style={{ fontFamily: 'var(--serif)', fontSize: 22, fontWeight: 900, color: 'var(--text)' }}>
             Base de Dados Pessoal
@@ -74,7 +74,7 @@ export default function Saved({ items, savedIds, toggleSave, onToLinkedIn }) {
           </p>
         </div>
       ) : (
-        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(300px,1fr))', gap: 16 }}>
+        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(240px,1fr))', gap: 16 }}>
           {saved.map(item => (
             <div key={item.id} style={{
               background: 'var(--cream)', border: '1px solid var(--border)',
