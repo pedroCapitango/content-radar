@@ -10,6 +10,7 @@ import Setup from './components/Setup'
 import Onboarding from './components/Onboarding'
 import Recommendations from './components/Recommendations'
 import { Analytics } from '@vercel/analytics/react';
+import useIsCompact from './hooks/useIsCompact'
 
 const panelTitles = {
   setup: 'Configuração', dashboard: 'Dashboard',
@@ -34,10 +35,27 @@ export default function App() {
     () => !localStorage.getItem('cr_onboarded')
   )
 
+  const THEME_KEY = 'cr_theme'
+  const [theme, setTheme] = useState(() => {
+    if (typeof document === 'undefined') return 'dark'
+    const t = document.documentElement?.dataset?.theme
+    return t === 'light' || t === 'dark' ? t : 'dark'
+  })
+
+  useEffect(() => {
+    try {
+      document.documentElement.dataset.theme = theme
+      localStorage.setItem(THEME_KEY, theme)
+    } catch {
+      // Ignore write failures and keep UI functional.
+    }
+  }, [theme])
+
   const {
     items, savedIds, history, lastSync, loading, loadingLog,
     runFetch, toggleSave, config, saveConfig, recommendedItems, refreshRecommendations,
   } = useStore()
+  const isCompact = useIsCompact()
 
   const today = new Date().toLocaleDateString('pt', { weekday: 'long', day: 'numeric', month: 'long' })
 
@@ -58,38 +76,56 @@ export default function App() {
     if (query) setActivePanel('content')
   }
 
+  function toggleTheme() {
+    setTheme(current => (current === 'light' ? 'dark' : 'light'))
+  }
+
   return (
     <>
       <Analytics />
-      <div style={{ display: 'flex', minHeight: '100vh' }}>
+      <div style={{ display: isCompact ? 'block' : 'flex', minHeight: '100vh' }}>
         {showOnboarding && <Onboarding onDismiss={dismissOnboarding} />}
         {loading && <Loading log={loadingLog} />}
 
         {/* SIDEBAR */}
         <aside style={{
-          position: 'fixed', left: 0, top: 0, bottom: 0, width: 220,
+          position: isCompact ? 'relative' : 'fixed',
+          left: 0,
+          top: 0,
+          bottom: isCompact ? 'auto' : 0,
+          width: isCompact ? '100%' : 220,
           background: 'var(--ink)', display: 'flex', flexDirection: 'column',
-          zIndex: 200, borderRight: '1px solid rgba(255,255,255,0.06)',
+          zIndex: 200,
+          borderRight: isCompact ? 'none' : '1px solid var(--border2)',
+          borderBottom: isCompact ? '1px solid var(--border2)' : 'none',
         }}>
-          <div style={{ padding: '24px 20px 20px', borderBottom: '1px solid rgba(255,255,255,0.07)' }}>
+          <div style={{ padding: isCompact ? '14px 16px' : '24px 20px 20px', borderBottom: '1px solid var(--border)' }}>
             <div style={{ fontFamily: 'var(--serif)', fontSize: 18, fontWeight: 900, color: 'var(--gold2)', letterSpacing: '-0.02em', lineHeight: 1.1 }}>
               Content<br />Radar
             </div>
-            <div style={{ fontSize: 9, color: 'rgba(255,255,255,0.3)', letterSpacing: '0.18em', textTransform: 'uppercase', marginTop: 4 }}>
+            <div style={{ fontSize: 9, color: 'var(--muted)', letterSpacing: '0.18em', textTransform: 'uppercase', marginTop: 4 }}>
               PRO · LinkedIn Edition
             </div>
           </div>
 
-          <nav style={{ flex: 1, padding: '16px 0' }}>
+          <nav style={{
+            flex: 1,
+            padding: isCompact ? '8px 10px' : '16px 0',
+            display: 'flex',
+            flexDirection: isCompact ? 'row' : 'column',
+            gap: isCompact ? 6 : 0,
+            overflowX: isCompact ? 'auto' : 'visible',
+          }}>
             {navItems.map(item => (
               <div key={item.id} onClick={() => setActivePanel(item.id)} style={{
                 display: 'flex', alignItems: 'center', gap: 10,
-                padding: '11px 20px',
-                color: activePanel === item.id ? 'var(--gold2)' : 'rgba(255,255,255,0.45)',
+                padding: isCompact ? '9px 12px' : '11px 20px',
+                color: activePanel === item.id ? 'var(--gold2)' : 'var(--muted)',
                 cursor: 'pointer', fontSize: 12, letterSpacing: '0.04em',
-                borderLeft: activePanel === item.id ? '2px solid var(--gold)' : '2px solid transparent',
+                borderLeft: isCompact ? 'none' : activePanel === item.id ? '2px solid var(--gold)' : '2px solid transparent',
+                borderBottom: isCompact ? activePanel === item.id ? '2px solid var(--gold)' : '2px solid transparent' : 'none',
                 background: activePanel === item.id ? 'rgba(232,160,32,0.08)' : 'transparent',
-                transition: 'all 0.15s', userSelect: 'none',
+                transition: 'all 0.15s', userSelect: 'none', whiteSpace: 'nowrap',
               }}>
                 <span style={{ width: 16, textAlign: 'center', fontSize: 14 }}>{item.icon}</span>
                 {item.label}
@@ -102,8 +138,12 @@ export default function App() {
             ))}
           </nav>
 
-          <div style={{ padding: '16px 20px', borderTop: '1px solid rgba(255,255,255,0.07)' }}>
-            <div style={{ fontSize: 10, color: 'rgba(255,255,255,0.3)', letterSpacing: '0.05em', lineHeight: 1.8 }}>
+          <div style={{
+            padding: '16px 20px',
+            borderTop: '1px solid var(--border)',
+            display: isCompact ? 'none' : 'block',
+          }}>
+            <div style={{ fontSize: 10, color: 'var(--muted)', letterSpacing: '0.05em', lineHeight: 1.8 }}>
               <span style={{ display: 'inline-block', width: 6, height: 6, borderRadius: '50%', background: 'var(--teal)', boxShadow: '0 0 6px var(--teal)', marginRight: 6, animation: 'blink 2.5s infinite' }} />
               5 FONTES ACTIVAS<br />
               ÚLTIMA SYNC: {lastSync ? lastSync.split(',')[1]?.trim() || '—' : '—'}
@@ -112,22 +152,48 @@ export default function App() {
         </aside>
 
         {/* MAIN */}
-        <div style={{ marginLeft: 220, flex: 1 }}>
+        <div style={{ marginLeft: isCompact ? 0 : 220, flex: 1 }}>
           <div style={{
             background: 'var(--cream)', borderBottom: '1px solid var(--border)',
-            padding: '14px 32px', display: 'flex', alignItems: 'center',
+            padding: isCompact ? '12px 14px' : '14px 32px',
+            display: 'flex',
+            alignItems: isCompact ? 'stretch' : 'center',
+            flexDirection: isCompact ? 'column' : 'row',
             justifyContent: 'space-between', position: 'sticky', top: 0, zIndex: 100,
+            gap: isCompact ? 10 : 0,
           }}>
-            <div style={{ fontFamily: 'var(--serif)', fontSize: 20, fontWeight: 700, color: 'var(--text)', letterSpacing: '-0.03em' }}>
+            <div style={{
+              fontFamily: 'var(--serif)', fontSize: isCompact ? 18 : 20, fontWeight: 700,
+              color: 'var(--text)', letterSpacing: '-0.03em', width: isCompact ? '100%' : 'auto',
+            }}>
               {panelTitles[activePanel]}
             </div>
-            <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: 12, width: isCompact ? '100%' : 'auto', flexWrap: 'wrap' }}>
+              <button
+                type="button"
+                onClick={toggleTheme}
+                aria-label="Alternar tema"
+                title="Alternar tema"
+                style={{
+                  padding: '9px 12px',
+                  background: 'var(--paper2)',
+                  color: 'var(--text)',
+                  borderRadius: 10,
+                  border: '1px solid var(--border2)',
+                  cursor: 'pointer',
+                  fontSize: 11,
+                  fontWeight: 600,
+                  letterSpacing: '0.04em',
+                }}
+              >
+                {theme === 'light' ? '☀ Luz' : '☾ Escuro'}
+              </button>
               <input
                 value={topicQuery}
                 onChange={e => setTopicQuery(e.target.value)}
                 placeholder="Tema da busca (ex: IA, react, backend)..."
                 style={{
-                  width: 270, padding: '8px 12px',
+                  width: isCompact ? '100%' : 270, flex: isCompact ? '1 1 100%' : 'none', padding: '8px 12px',
                   borderRadius: 8, border: '1px solid var(--border2)',
                   background: 'var(--paper)', color: 'var(--text)',
                   fontSize: 11, outline: 'none',
@@ -146,9 +212,9 @@ export default function App() {
             </div>
           </div>
 
-          <div style={{ padding: '28px 32px' }}>
+          <div style={{ padding: isCompact ? '16px 14px 20px' : '28px 32px' }}>
             {activePanel === 'dashboard' && (
-              <Dashboard items={items} savedIds={savedIds} history={history} />
+              <Dashboard items={items} savedIds={savedIds} history={history} isCompact={isCompact} />
             )}
             {activePanel === 'content' && (
               <ContentGrid items={items} savedIds={savedIds} toggleSave={toggleSave} onToLinkedIn={goToLinkedIn} externalSearch={activeTopic} />
@@ -160,10 +226,10 @@ export default function App() {
               <Saved items={items} savedIds={savedIds} toggleSave={toggleSave} onToLinkedIn={goToLinkedIn} />
             )}
             {activePanel === 'linkedin' && (
-              <LinkedInHelper items={items} initialItem={linkedInItem} />
+              <LinkedInHelper items={items} initialItem={linkedInItem} isCompact={isCompact} />
             )}
             {activePanel === 'setup' && (
-              <Setup config={config} saveConfig={saveConfig} />
+              <Setup config={config} saveConfig={saveConfig} isCompact={isCompact} />
             )}
           </div>
         </div>
