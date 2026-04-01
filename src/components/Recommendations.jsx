@@ -3,7 +3,7 @@ const fmt = n => n >= 1000 ? (n / 1000).toFixed(1) + 'k' : String(n)
 export default function Recommendations({ items, onRefresh }) {
   return (
     <div>
-      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 20 }}>
+      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 20, gap: 12, flexWrap: 'wrap' }}>
         <div>
           <h2 style={{ fontFamily: 'var(--serif)', fontSize: 22, fontWeight: 900, color: 'var(--text)' }}>
             Indicações da Tabnews
@@ -29,7 +29,7 @@ export default function Recommendations({ items, onRefresh }) {
           Ainda sem indicações da Tabnews.
         </div>
       ) : (
-        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(300px,1fr))', gap: 16 }}>
+        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(240px,1fr))', gap: 16 }}>
           {items.map(item => (
             <a
               key={item.id}
